@@ -64,11 +64,17 @@ function render(){
   const rocket=l.rocket?.configuration?.full_name||l.rocket?.configuration?.name||'Rocket TBD';
   const loc=l.pad?.location?.name||'Florida Space Coast';
   const video=(l.vidURLs&&l.vidURLs.length?l.vidURLs[0]?.url:null)||(l.vid_urls&&l.vid_urls.length?l.vid_urls[0]:null)||l.webcast_live;
+  const provider=(agency||'').toLowerCase();
+  const fallback=provider.includes('spacex')?'https://www.spacex.com/launches/':
+    provider.includes('united launch alliance')||provider.includes('ula')?'https://www.youtube.com/@ulalaunch':
+    provider.includes('blue origin')?'https://www.blueorigin.com/live':
+    provider.includes('nasa')?'https://www.youtube.com/@NASA':
+    'https://www.youtube.com/results?search_query='+encodeURIComponent(agency+' '+l.name+' launch live');
   return `<article class="card">
    ${img?`<img class="pic" src="${esc(img)}" alt="">`:`<div class="pic"></div>`}
    <div><div class="name">${esc(l.name)}</div><div class="date">${esc(fmtDate(l.net))}</div>
    <div class="status ${st[1]}">${esc(st[0])}</div>
-   <div class="meta">${esc(agency)}<br>${esc(rocket)}<br><span class="loc">${esc(loc)}</span></div>${video?`<a class="watch" href="${esc(video)}" target="_blank" rel="noopener"><span class="liveDot"></span> WATCH LAUNCH</a>`:''}</div>
+   <div class="meta">${esc(agency)}<br>${esc(rocket)}<br><span class="loc">${esc(loc)}</span></div>${video?`<a class="watch" href="${esc(video)}" target="_blank" rel="noopener"><span class="liveDot"></span> WATCH LAUNCH</a>`:`<a class="watch" href="${esc(fallback)}" target="_blank" rel="noopener">📺 FIND LIVE STREAM</a>`}</div>
    <div class="arrow">›</div></article>`;
  }).join('');
 }
