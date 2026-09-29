@@ -20,14 +20,6 @@
 .bar{display:flex;align-items:center;justify-content:space-between;padding:18px 18px 9px}.bar h2{margin:0;font-size:21px}.refresh{font-size:14px;color:#aaa}
 .card{display:grid;grid-template-columns:112px 1fr 22px;gap:14px;padding:14px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
 .pic{width:112px;height:166px;object-fit:cover;background:#29292b;border-radius:2px}.name{font-size:25px;line-height:1.08;margin:4px 0 13px}.date,.status,.meta{font-size:18px;line-height:1.4}.status{margin:5px 0 13px}.go{color:#8ee39b}.tbd{color:#ffd479}.meta{color:#f2f2f3}.loc{color:#d1d1d4}.watch{display:inline-flex;align-items:center;gap:7px;margin-top:12px;padding:9px 13px;border-radius:9px;background:#fff;color:#111;text-decoration:none;font-size:15px;font-weight:700}.watch:active{opacity:.72}.liveDot{width:8px;height:8px;border-radius:50%;background:#e53935;display:inline-block}.arrow{align-self:center;font-size:40px;color:#626267}.empty,.error{padding:30px 20px;text-align:center;color:#bbb}.error{color:#ffb4b4}
-
-.card{cursor:pointer}.padline{margin-top:6px;color:#aaa;font-size:14px}
-.detail{position:fixed;inset:0;background:#151515;z-index:50;overflow:auto;display:none;padding-bottom:30px}.detail.show{display:block}
-.detailHero{position:relative;min-height:280px;background:#222 center/cover no-repeat}.detailShade{position:absolute;inset:0;background:linear-gradient(transparent 20%,rgba(0,0,0,.9))}
-.back{position:absolute;top:calc(14px + env(safe-area-inset-top));left:14px;z-index:2;border:0;border-radius:22px;padding:9px 13px;background:rgba(0,0,0,.72);color:white;font-size:17px}
-.detailTitle{position:absolute;left:18px;right:18px;bottom:18px;font-size:28px;font-weight:700}.detailBody{padding:18px}.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.chip{background:#2b2b2d;padding:7px 10px;border-radius:999px;font-size:13px}
-.infoGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.info{background:#202022;padding:13px;border-radius:12px}.info small{display:block;color:#aaa;margin-bottom:5px}.desc{font-size:17px;line-height:1.45;color:#e6e6e8}
-.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.action{display:block;text-align:center;padding:13px 8px;border-radius:11px;background:#fff;color:#111;text-decoration:none;font-weight:750;font-size:14px}.liveNow{background:#c62828!important;color:#fff!important}
 @media(max-width:430px){.hero h1{font-size:25px}.num{font-size:34px}.card{grid-template-columns:94px 1fr 18px;gap:12px}.pic{width:94px;height:150px}.name{font-size:22px}.date,.status,.meta{font-size:16px}}
 </style>
 </head>
@@ -45,7 +37,7 @@
 </section>
 <div class="bar"><h2>Upcoming Launches</h2><span class="refresh" id="updated"></span></div>
 <section id="list"><div class="empty">Loading Cape Canaveral & Kennedy Space Center launches…</div></section>
-</main><section class="detail" id="detail"><div class="detailHero" id="detailHero"><button class="back" id="backBtn">‹ Back</button><div class="detailShade"></div><div class="detailTitle" id="detailTitle"></div></div><div class="detailBody"><div class="chips" id="detailChips"></div><div class="infoGrid" id="detailGrid"></div><h3>Mission</h3><div class="desc" id="detailDesc"></div><div class="actions" id="detailActions"></div></div></section>
+</main>
 <script>
 const API='https://ll.thespacedevs.com/2.3.0/launches/upcoming/?format=json&limit=100&ordering=net&mode=normal';
 let launches=[], timer;
@@ -80,17 +72,17 @@ function render(){
     provider.includes('blue origin')?'https://www.blueorigin.com/live':
     provider.includes('nasa')?'https://www.youtube.com/@NASA':
     'https://www.youtube.com/results?search_query='+encodeURIComponent(agency+' '+l.name+' launch live');
-  return `<article class="card" onclick="openDetail(\'${esc(l.id)}\')">
+  return `<article class="card">
    ${img?`<img class="pic" src="${esc(img)}" alt="">`:`<div class="pic"></div>`}
    <div><div class="name">${esc(l.name)}</div><div class="date">${esc(fmtDate(l.net))}</div>
    <div class="status ${st[1]}">${esc(st[0])}</div>
-   <div class="meta">${esc(agency)}<br>${esc(rocket)}<br><span class="loc">${esc(loc)}</span></div><div class="padline">🚀 ${esc(l.pad?.name||\'Launch pad TBD\')}</div>${video?`<a class="watch" onclick="event.stopPropagation()" href="${esc(video)}" target="_blank" rel="noopener"><span class="liveDot"></span> WATCH LAUNCH</a>`:`<a class="watch" onclick="event.stopPropagation()" href="${esc(fallback)}" target="_blank" rel="noopener">📺 FIND LIVE STREAM</a>`}</div>
+   <div class="meta">${esc(agency)}<br>${esc(rocket)}<br><span class="loc">${esc(loc)}</span></div>${video?`<a class="watch" href="${esc(video)}" target="_blank" rel="noopener"><span class="liveDot"></span> WATCH LAUNCH</a>`:`<a class="watch" href="${esc(fallback)}" target="_blank" rel="noopener">📺 FIND LIVE STREAM</a>`}</div>
    <div class="arrow">›</div></article>`;
  }).join('');
 }
 function tick(){
  const n=launches[0]; if(!n?.net)return;
- $('nextName').textContent=n.name; document.querySelector('.kicker').textContent=(Math.abs(new Date(n.net)-new Date())<5400000)?'🔴 LIVE NOW':'NEXT FLORIDA LAUNCH';
+ $('nextName').textContent=n.name;
  let d=Math.max(0,new Date(n.net)-new Date());
  const days=Math.floor(d/86400000); d%=86400000;
  const hrs=Math.floor(d/3600000); d%=3600000;
@@ -98,18 +90,6 @@ function tick(){
  $('days').textContent=days; $('hours').textContent=String(hrs).padStart(2,'0');
  $('mins').textContent=String(mins).padStart(2,'0'); $('secs').textContent=String(secs).padStart(2,'0');
 }
-
-function stream(l){return (l.vidURLs&&l.vidURLs.length?l.vidURLs[0]?.url:null)||(l.vid_urls&&l.vid_urls.length?l.vid_urls[0]:null)||l.webcast_live}
-function fallback(l){let a=(l.launch_service_provider?.name||'').toLowerCase();return a.includes('spacex')?'https://www.spacex.com/launches/':a.includes('united launch alliance')||a.includes('ula')?'https://www.youtube.com/@ulalaunch':a.includes('blue origin')?'https://www.blueorigin.com/live':a.includes('nasa')?'https://www.youtube.com/@NASA':'https://www.youtube.com/results?search_query='+encodeURIComponent((l.launch_service_provider?.name||'')+' '+l.name+' launch live')}
-function cal(l){let d=new Date(l.net),e=new Date(d.getTime()+3600000),z=x=>x.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent('Launch: '+l.name)+'&dates='+z(d)+'/'+z(e)+'&location='+encodeURIComponent(l.pad?.location?.name||'Florida Space Coast')}
-function openDetail(id){let l=launches.find(x=>String(x.id)===String(id));if(!l)return;let a=l.launch_service_provider?.name||'Launch Provider',r=l.rocket?.configuration?.full_name||l.rocket?.configuration?.name||'Rocket TBD',v=stream(l),im=imageFor(l),pr=l.probability;
-$('detailTitle').textContent=l.name;$('detailHero').style.backgroundImage=im?`url("${im}")`:'none';$('detailChips').innerHTML=`<span class="chip">${esc(status(l)[0])}</span><span class="chip">${esc(a)}</span><span class="chip">${esc(r)}</span>`;
-let win=l.window_start&&l.window_end?fmtDate(l.window_start)+' to '+fmtDate(l.window_end):'Not posted';
-$('detailGrid').innerHTML=`<div class="info"><small>Launch time</small>${esc(fmtDate(l.net))}</div><div class="info"><small>Launch pad</small>${esc(l.pad?.name||'TBD')}</div><div class="info"><small>Launch window</small>${esc(win)}</div><div class="info"><small>Launch weather</small>${pr!=null?esc(pr+'% favorable'):'Not posted'}${l.weather_concerns?'<br><small>'+esc(l.weather_concerns)+'</small>':''}</div>`;
-$('detailDesc').textContent=l.mission?.description||l.mission?.name||'Mission details have not been posted yet.';let live=l.net&&Math.abs(new Date(l.net)-new Date())<5400000;
-$('detailActions').innerHTML=`<a class="action ${live?'liveNow':''}" target="_blank" rel="noopener" href="${esc(v||fallback(l))}">${v?(live?'🔴 WATCH LIVE':'▶ WATCH LAUNCH'):'📺 FIND LIVE STREAM'}</a><a class="action" target="_blank" rel="noopener" href="${esc(cal(l))}">📅 ADD TO CALENDAR</a>`;
-$('detail').classList.add('show');document.body.style.overflow='hidden'}
-function closeDetail(){$('detail').classList.remove('show');document.body.style.overflow=''};$('backBtn').addEventListener('click',closeDetail);
 async function load(){
  try{
   const r=await fetch(API); if(!r.ok)throw new Error('API '+r.status);
